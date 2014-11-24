@@ -11,8 +11,8 @@ Pre-requisites:
 
 python 2.7
 opencv library with python wrappers (developed using x.x)
-numpy (developed using x.x)
-picamera (developed using x.x)
+numpy (developed using 1.9.1)
+picamera (developed using 1.8)
 
 Usage:
 
