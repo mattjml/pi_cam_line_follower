@@ -4,6 +4,7 @@ from cv2 import cv
 import numpy as np
 #from matplotlib import pyplot
 import operator
+from datetime import datetime
 
 from util import Time_It
 
@@ -15,18 +16,18 @@ class Line_Analyser(object):
         if chr(key).lower() == 'q':
             sys.exit(1)
 
-    def find_local_extrema(hist, op = operator.lt):
+    def find_local_extrema(self, hist, op = operator.lt):
         hist_len = len(hist)    
         last_index = hist_len - 1
         unfiltered_extrema = [index for index in xrange(hist_len) if (index == 0 and op(hist[0],hist[1])) or (index == last_index and op(hist[last_index],hist[last_index - 1])) or (index > 0 and index < last_index and op(hist[index],hist[index-1]) and op(hist[index],hist[index+1]))]
         return [unfiltered_extrema[index] for index in xrange(len(unfiltered_extrema)) if index == 0 or unfiltered_extrema[index-1] + 1 != unfiltered_extrema[index]]
 
-    def make_binary_image(img, threshold_method, demo_hist_plot=False, demo_threshold=False, demo_erode=False):
+    def make_binary_image(self, img, demo_hist_plot=False, demo_threshold=False, demo_erode=False):
         ''' '''
         
         def find_extrema(histogram):
             ''' '''
-            initial_maxima = find_local_extrema(histogram, operator.ge)
+            initial_maxima = self.find_local_extrema(histogram, operator.ge)
             extrema_threshold = 0
             maxima = []
             while len(maxima) < 2:
@@ -34,9 +35,9 @@ class Line_Analyser(object):
                 if extrema_threshold >= 1.0:
                     return 1
                 tmp_maxima = [index for index in initial_maxima if histogram[index] > extrema_threshold]
-                 maxima = [tmp_maxima[x] for x in range(len(tmp_maxima)) if x == 0 or (tmp_maxima[x-1] + 20) < tmp_maxima[x]]
+                maxima = [tmp_maxima[x] for x in range(len(tmp_maxima)) if x == 0 or (tmp_maxima[x-1] + 20) < tmp_maxima[x]]
            
-            minima = [index for index in find_local_extrema(histogram, operator.le) if histogram[index] < extrema_threshold]
+            minima = [index for index in self.find_local_extrema(histogram, operator.le) if histogram[index] < extrema_threshold]
             possible_minima = [index for index in minima if index > maxima[0] and index < maxima[1]]
             return min(possible_minima)
        
@@ -60,6 +61,7 @@ class Line_Analyser(object):
 
         hist,bins = np.histogram(img.ravel(),256,[0,256])
         hist = hist.astype(float)/max(hist)
+        #print hist
         threshold = find_extrema(hist)
         #print("Chosen threshold {0}".format(threshold))
          
@@ -67,12 +69,12 @@ class Line_Analyser(object):
             #pyplot.hist(img.ravel(),256,[0,256]);
             #pyplot.show()
     
-        img = img_threshold(img, threshold_method, threshold, demo_threshold)
+        img = img_threshold(img, cv2.THRESH_BINARY, threshold, demo_threshold)
         img = erode_and_dilate(img, demo_erode) 
-        img = img_threshold(img, THRESHOLD_MANUAL, 10, demo_threshold)
+        img = img_threshold(img, cv2.THRESH_BINARY, 10, demo_threshold)
         return img
 
-    def intersect_lines(img, interval_percent, demo=False):
+    def intersect_lines(self, img, interval_percent, demo=False):
         '''Takes an input opencv binary image and returns the horizontal line
         intersections at different vertical postitions throughout the image.
         Returns dictionary with vertical positions (as percentages) as keys
@@ -80,7 +82,6 @@ class Line_Analyser(object):
         line intersections.'''
         
         dsp_img = img.copy()
-        cv2.imwrite('pre_lines.jpeg', dsp_img) 
         imheight = img.shape[0]
         imwidth = img.shape[1]
         lines = {}
@@ -100,35 +101,32 @@ class Line_Analyser(object):
                 for line in lines[y_pc]:
                     for i in range((line[0]*imwidth)/100, (line[1]*imwidth)/100):
                         dsp_img[y][i] = 125
-        cv2.imwrite('{}.jpeg'.format(datetime.now()),dsp_img)
     
         if demo:
             cv2.imshow('scan_lines', dsp_img)
             waitKey()
+        #cv2.imwrite('img_{}.jpeg'.format(datetime.now()),dsp_img)
         return lines
 
-    def get_lines(img, interval_percent=10, threshold_method=THRESHOLD_MANUAL, demo_thresholds=False, demo_lines=False):
+    def get_lines(self, img, interval_percent=10, demo_thresholds=False, demo_lines=False):
         lines = None
-        try:
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
-            overall_timeit = Time_It('Overall')
+        overall_timeit = Time_It('Overall')
     
-            binary_timeit = Time_It('Binary')
-            img = make_binary_image(img, THRESHOLD_MANUAL, demo_hist_plot=False, demo_threshold=False, demo_erode=False)
-            binary_timeit.finish()
-            print(binary_timeit)
+        binary_timeit = Time_It('Binary')
+        img = self.make_binary_image(img, demo_hist_plot=False, demo_threshold=False, demo_erode=False)
+        binary_timeit.finish()
+        #print(binary_timeit)
     
-            find_lines_timeit = Time_It('Find Lines')
-            lines = intersect_lines(img, interval_percent, demo=demo_lines)
-            find_lines_timeit.finish()
-            print(find_lines_timeit)
+        find_lines_timeit = Time_It('Find Lines')
+        lines = self.intersect_lines(img, interval_percent, demo=demo_lines)
+        find_lines_timeit.finish()
+        #print(find_lines_timeit)
     
-            overall_timeit.finish()
-            print(overall_timeit)
+        overall_timeit.finish()
+        #print(overall_timeit)
 
-        except KeyboardInterrupt:
-            print('Exiting')
         return lines
 
 def test_line_analysis(path):
