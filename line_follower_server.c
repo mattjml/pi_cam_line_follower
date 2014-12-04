@@ -7,7 +7,12 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+#define PACKET_LEN (8)
+#define RD_BUFFER_LEN (100 * PACKET_LEN)
+#define PACKET_HEADER (0x41)
+
 static int server_socket = 0, client_socket = 0;
+static char recv_data[RD_BUFFER_LEN];
 
 int lf_socket_init(char * path)
 {
@@ -43,7 +48,7 @@ int lf_socket_init(char * path)
     printf("Client Socket connected.\n");
 }
 
-int lf_receive(char * p_data, int * p_len)
+int lf_receive(char * p_data, int buffer_len, int * p_len)
 {
     ssize_t len;
     if(!client_socket)
@@ -52,7 +57,7 @@ int lf_receive(char * p_data, int * p_len)
         return 1;
     }
     
-    len = recv(client_socket, p_data, 100, 0); /* Todo handle magic numbers */
+    len = recv(client_socket, p_data, buffer_len, 0); /* Todo handle magic numbers */
     if (len <= 0) 
     {
         *p_len = 0;
@@ -66,7 +71,7 @@ int lf_receive(char * p_data, int * p_len)
     }
     else
     {
-        printf("lennn\n");
+        printf("Got something\n");
         *p_len = (int) len;
     }
     return 0;
@@ -96,25 +101,54 @@ int lf_close(void)
     }
 }
 
+int lf_receive_packet(char * p_data, int * got_data)
+{
+    int data_len, ret, i;
+
+    memset(recv_data, 0, RD_BUFFER_LEN);
+    *got_data = 0;
+    
+    ret = lf_receive((char *)&recv_data, RD_BUFFER_LEN,&data_len);
+    if(ret!=0)
+    {
+        return -1;
+    }
+    if(data_len>=PACKET_LEN)
+    {
+        for(i = (data_len - PACKET_LEN); i>=0; i--)
+        {
+            printf("char %c\n", recv_data[i]);
+            if(((int)recv_data[i]) == PACKET_HEADER)
+            {
+                memcpy((void *) p_data, (void *) &recv_data[i], PACKET_LEN);
+                *got_data = 1;
+                break;
+            }
+        }
+    }
+    return 0;
+}
+
+
 int main(void)
 {
     const char * path = "socket.sock";
-    char data[101];
-    int data_len, ret;
+    char data[PACKET_LEN];
+    int ret, got_data;
     lf_socket_init((char *) path);
     while(1)
     {
-        ret = lf_receive((char *)&data,&data_len);
+        ret = lf_receive_packet((char *)&data,&got_data);
         if(ret!=0)
         {
             exit(1);
         }
-        if(data_len)
+        if(got_data)
         {
-            data[data_len] = '\0';
-            printf("lf_receive '%s', %d len\n", (char *) &data, data_len);
+            data[PACKET_LEN - 1] = '\0';
+            printf("lf_receive '%s'\n", (char *) &data);
+            ret = lf_send((char *) &data, PACKET_LEN);
         }
         sleep(1);
     }
 }
-
