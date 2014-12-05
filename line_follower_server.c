@@ -7,9 +7,9 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#define PACKET_LEN (8)
-#define RD_BUFFER_LEN (100 * PACKET_LEN)
-#define PACKET_HEADER (0x41)
+#define PACKET_LEN (5)
+#define RD_BUFFER_LEN ((2 * PACKET_LEN) - 1)
+#define PACKET_HEADER (0xFF)
 
 static int server_socket = 0, client_socket = 0;
 static char recv_data[RD_BUFFER_LEN];
@@ -103,29 +103,48 @@ int lf_close(void)
 
 int lf_receive_packet(char * p_data, int * got_data)
 {
-    int data_len, ret, i;
+    int data_len, data_counter, header_pos, data, ret, i;
 
     memset(recv_data, 0, RD_BUFFER_LEN);
     *got_data = 0;
     
-    ret = lf_receive((char *)&recv_data, RD_BUFFER_LEN,&data_len);
-    if(ret!=0)
-    {
-        return -1;
-    }
-    if(data_len>=PACKET_LEN)
-    {
-        for(i = (data_len - PACKET_LEN); i>=0; i--)
+    data_counter = 0;
+    while (data_counter < PACKET_LEN)
+    { 
+        ret = lf_receive((char *)&recv_data, PACKET_LEN-data_counter, &data_len);
+        if(ret!=0)
         {
-            printf("char %c\n", recv_data[i]);
-            if(((int)recv_data[i]) == PACKET_HEADER)
-            {
-                memcpy((void *) p_data, (void *) &recv_data[i], PACKET_LEN);
-                *got_data = 1;
-                break;
-            }
+            return -1;
+        }
+        data_counter += data_len;
+    }
+    
+    header_pos = 0;
+    while(data_counter <= RD_BUFFER_LEN)
+    {
+        if(recv_data[header_pos] == PACKET_HEADER)
+        {
+            memcpy((void *) p_data, (void *) &recv_data[header_pos], PACKET_LEN);
+            *got_data = 1;
+            break;
+        }
+        else if (data_counter >= RD_BUFFER_LEN)
+        {
+            break;
+        }
+
+        ret = lf_receive((char *)&recv_data[data_counter], 1, &data_len);
+        if(ret!=0)
+        {
+            return -1;
+        }
+        if(data_len)
+        {
+            data_counter += data_len;
+            header_pos++;
         }
     }
+    
     return 0;
 }
 
@@ -149,6 +168,6 @@ int main(void)
             printf("lf_receive '%s'\n", (char *) &data);
             ret = lf_send((char *) &data, PACKET_LEN);
         }
-        sleep(1);
+        //sleep(1);
     }
 }
