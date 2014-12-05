@@ -17,14 +17,14 @@ with picamera.PiCamera() as camera,\
     motion = motor.Motion(comms)
 
 
-    control_params = control.Control_Parameters(forward_steps=120,
-                                                forward_speed=120,
-                                                reversing_steps=120,
-                                                reversing_speed=120,
-                                                turning_steps=30,
-                                                turning_speed=120,
-                                                finding_bend_steps=90,
-                                                finding_bend_speed=120)
+    control_params = control.Control_Parameters(forward_steps=200,
+                                                forward_speed=300,
+                                                reversing_steps=200,
+                                                reversing_speed=300,
+                                                turning_steps=80,
+                                                turning_speed=300,
+                                                finding_bend_steps=200,
+                                                finding_bend_speed=300)
 
     control = control.Control(motion, control_params)
     analyser = line_analysis.Line_Analyser()
@@ -35,7 +35,7 @@ with picamera.PiCamera() as camera,\
         for foo in camera.capture_continuous(stream, 'bgr',
                                              use_video_port=True):
             timeit.finish()
-            #print(timeit)
+            print(timeit)
             timeit = util.Time_It('Overall')
             image = stream.array
             lines = analyser.get_lines(image,10)
