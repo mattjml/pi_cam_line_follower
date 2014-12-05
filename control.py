@@ -49,7 +49,6 @@ class Control(object):
             self.current_order = (self.motion.backward,
                                   (self.params.reversing_steps,
                                    self.params.reversing_speed))
-            self.fsm.ev_reversing()
         elif len(centre_row) == 1:
             if centre_row[0][1] < 50:
                 self.current_order = (self.motion.rotate_left,
@@ -65,26 +64,6 @@ class Control(object):
                               (self.params.forward_steps,
                                self.params.forward_speed))
 
-    def on_reversing(self, e):
-        self.current_order = (self.motion.backward,
-                              (self.params.reversing_steps,
-                               self.params.reversing_speed))
-
-    def on_finding_bend(self, e):
-        centre_row = e.args[0][0]
-        dist_left = abs(centre_row[0] - 50)
-        dist_right = abs(centre_row[1] - 50)
-        if dist_left > (dist_right + self.params.finding_bend_thresh):
-            self.current_order = (self.motion.rotate_left,
-                                  (self.params.finding_bend_steps,
-                                   self.params.finding_bend_speed))
-        elif dist_right > (dist_left + self.params.finding_bend_thresh):
-            self.current_order = (self.motion.rotate_right,
-                                  (self.params.finding_bend_steps,
-                                   self.params.finding_bend_speed))
-        else:
-            self.fsm.ev_reversing()
- 
     def __init__(self, motion, parameters):
         self.motion = motion
         self.params = parameters
@@ -97,18 +76,10 @@ class Control(object):
                       {'name': 'ev_out',       'src': 'init',         'dst': 'out'},
                       {'name': 'ev_in',        'src': 'out',          'dst': 'in'},
                       {'name': 'ev_out',       'src': 'out',          'dst': 'out'},
-                      {'name': 'ev_reversing', 'src': 'out',          'dst': 'reversing'},
-                      {'name': 'ev_out',       'src': 'reversing',    'dst': 'reversing'},
-                      {'name': 'ev_in',        'src': 'reversing',    'dst': 'finding_bend'},
-                      {'name': 'ev_in',        'src': 'finding_bend', 'dst': 'in'},
-                      {'name': 'ev_out',       'src': 'finding_bend', 'dst': 'out'},
-                      {'name': 'ev_reversing', 'src': 'finding_bend', 'dst': 'reversing'},
                       {'name': 'ev_in',        'src': 'in',           'dst': 'in'},
                       {'name': 'ev_out',       'src': 'in',           'dst': 'out'}],
                  'callbacks': 
                      {'oninit'        : self.on_init,
-                      'onreversing'   : self.on_reversing,
-                      'onfinding_bend': self.on_finding_bend,
                       'onout'         : self.on_out,
                       'onin'          : self.on_in}})
 

@@ -17,11 +17,11 @@ with picamera.PiCamera() as camera,\
     motion = motor.Motion(comms)
 
 
-    control_params = control.Control_Parameters(forward_steps=200,
+    control_params = control.Control_Parameters(forward_steps=15,
                                                 forward_speed=300,
-                                                reversing_steps=200,
+                                                reversing_steps=15,
                                                 reversing_speed=300,
-                                                turning_steps=80,
+                                                turning_steps=100,
                                                 turning_speed=300,
                                                 finding_bend_steps=200,
                                                 finding_bend_speed=300)
