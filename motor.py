@@ -80,6 +80,16 @@ class Motion(object):
                           steps = steps >> 1)
         self.comms.write(l_packet.bytes)
         self.comms.write(r_packet.bytes)
+
+    def specific_move(self, dir_left, steps_left, speed_left, dir_right, steps_right, speed_right):
+        l_packet = Packet(control=[Packet.CONTROL_LEFT_FORWARD, Packet.CONTROL_LEFT_BACKWARD][dir_left == Motion.BACKWARD],
+                          speed = speed_left >> 1,
+                          steps =_steps_left >> 1)
+        r_packet = Packet(control=[Packet.CONTROL_RIGHT_FORWARD, Packet.CONTROL_RIGHT_BACKWARD][dir_right == Motion.BACKWARD],
+                          speed = speed_right >> 1,
+                          steps = steps_right >> 1)
+        self.comms.write(l_packet.bytes)
+        self.comms.write(r_packet.bytes)
     
     def rotate_left(self, steps, speed):
         self._rotate_move(Motion.LEFT, steps, speed)

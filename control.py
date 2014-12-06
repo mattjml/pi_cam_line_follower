@@ -52,10 +52,8 @@ class Control(object):
         direction = e.args[0]
         lines = e.args[1]
         if direction is None:
-            self.current_order = (self.motion.backward,
-                                  (self.params.reversing_steps,
-                                   self.params.reversing_speed))
-        elif direction is Control.LEFT:
+            direction = self.last_turn
+        if direction is Control.LEFT:
             self.current_order = (self.motion.rotate_left,
                                   (self.params.turning_steps,
                                    self.params.turning_speed))

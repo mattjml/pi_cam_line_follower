@@ -21,8 +21,8 @@ with picamera.PiCamera() as camera,\
                                                 forward_speed=140,
                                                 reversing_steps=5,
                                                 reversing_speed=300,
-                                                turning_steps=75,
-                                                turning_speed=200,
+                                                turning_steps=10,
+                                                turning_speed=300,
                                                 finding_bend_steps=100,
                                                 finding_bend_speed=170)
 
