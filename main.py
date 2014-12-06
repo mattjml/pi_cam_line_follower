@@ -17,7 +17,7 @@ with picamera.PiCamera() as camera,\
     motion = motor.Motion(comms)
 
 
-    control_params = control.Control_Parameters(forward_steps=2,
+    control_params = control.Control_Parameters(forward_steps=4,
                                                 forward_speed=140,
                                                 reversing_steps=10,
                                                 reversing_speed=200,
