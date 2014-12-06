@@ -55,9 +55,10 @@ class Control(object):
         if direction is None:
             direction = self.last_turn
             # self.backwards_turn(direction)
-            self.current_order = (self.motion.backward,
-                                  (self.params.reversing_steps,
-                                   self.params.reversing_speed))
+            # self.current_order = (self.motion.backward,
+            #                       (self.params.reversing_steps,
+            #                        self.params.reversing_speed))
+            self.fsm.ev_reversing()
         elif direction is Control.LEFT:
             self.current_order = (self.motion.rotate_left,
                                   (self.params.turning_steps,
@@ -68,6 +69,21 @@ class Control(object):
                                   (self.params.turning_steps,
                                    self.params.turning_speed))
             self.last_turn = direction
+
+    def on_reversing(self, e):
+        self.current_order = (self.motion.backward,
+                              (self.params.reversing_steps,
+                               self.params.reversing_speed))
+
+    def on_perturbing(self, e):
+        if self.last_turn == Control.LEFT:
+            self.current_order = (self.motion.rotate_left,
+                                  (self.params.turning_steps,
+                                   self.params.turning_speed))
+        else:
+            self.current_order = (self.motion.rotate_right,
+                                  (self.params.turning_steps,
+                                   self.params.turning_speed))
 
     def on_in_top(self, e):
         self.current_order = (self.motion.forward,
@@ -115,14 +131,23 @@ class Control(object):
                       {'name': 'ev_in_top',        'src': 'out',          'dst': 'in_top'},
                       {'name': 'ev_in_bottom',     'src': 'out',          'dst': 'in_bottom'},
                       {'name': 'ev_out',           'src': 'out',          'dst': 'out'},
+                      {'name': 'ev_reversing',     'src': 'out',          'dst': 'reversing'},
                       {'name': 'ev_in_top',        'src': 'in_top',       'dst': 'in_top'},
                       {'name': 'ev_in_bottom',     'src': 'in_top',       'dst': 'in_bottom'},
                       {'name': 'ev_out',           'src': 'in_top',       'dst': 'out'},
+                      {'name': 'ev_in_top',        'src': 'reversing',    'dst': 'perturbing'},
+                      {'name': 'ev_in_bottom',     'src': 'reversing',    'dst': 'perturbing'},
+                      {'name': 'ev_out',           'src': 'reversing',    'dst': 'reversing'},
+                      {'name': 'ev_in_top',        'src': 'perturbing',   'dst': 'in_top'},
+                      {'name': 'ev_in_bottom',     'src': 'perturbing',   'dst': 'in_bottom'},
+                      {'name': 'ev_out',           'src': 'perturbing',   'dst': 'out'},
                       {'name': 'ev_in_top',        'src': 'in_bottom',    'dst': 'in_top'},
                       {'name': 'ev_in_bottom',     'src': 'in_bottom',    'dst': 'in_bottom'},
                       {'name': 'ev_out',           'src': 'in_bottom',    'dst': 'out'}],
                  'callbacks': 
-                     {'oninit'        : self.on_init,
+                     {'onperturbing'  : self.on_perturbing,
+                      'onreversing'   : self.on_reversing,
+                      'oninit'        : self.on_init,
                       'onout'         : self.on_out,
                       'onin_top'      : self.on_in_top,
                       'onin_bottom'   : self.on_in_top}})
