@@ -62,7 +62,7 @@ class Line_Analyser(object):
         hist,bins = np.histogram(img.ravel(),256,[0,256])
         hist = hist.astype(float)/max(hist)
         #print hist
-        threshold = find_extrema(hist)
+        threshold = find_extrema(hist) + 6
         #print("Chosen threshold {0}".format(threshold))
          
         #if demo_hist_plot:
@@ -106,8 +106,6 @@ class Line_Analyser(object):
         if demo:
             cv2.imshow('scan_lines', dsp_img)
             waitKey()
-        cv2.imwrite('/root/img_{}.jpeg'.format(datetime.now()),dsp_img)
-        print("writing to img")
         return lines
 
     def get_lines(self, img, interval_percent=10, demo_thresholds=False, demo_lines=False):

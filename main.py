@@ -18,7 +18,7 @@ with picamera.PiCamera() as camera,\
 
 
     control_params = control.Control_Parameters(forward_steps=4,
-                                                forward_speed=140,
+                                                forward_speed=160,
                                                 reversing_steps=10,
                                                 reversing_speed=200,
                                                 turning_steps=10,

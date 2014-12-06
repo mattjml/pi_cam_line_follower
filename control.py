@@ -116,7 +116,7 @@ class Control(object):
         self.backwards_turn(direction)
 
     def __init__(self, motion, parameters):
-        self.log_file = open('/root/log.file', 'w')
+        #self.log_file = open('/root/log.file', 'w')
         self.motion = motion
         self.params = parameters
         self.current_order = (None, (None, None))
@@ -153,8 +153,8 @@ class Control(object):
                       'onin_bottom'   : self.on_in_top}})
 
         def log(e):
-            self.log_file.write('event: %s, src: %s, dst: %s, time:%s\n' % (e.event, e.src, e.dst, datetime.now()))
-            self.log_file.flush()
+            #self.log_file.write('event: %s, src: %s, dst: %s, time:%s\n' % (e.event, e.src, e.dst, datetime.now()))
+            #self.log_file.flush()
             print 'event: %s, src: %s, dst: %s, motion:%s' % (e.event, e.src, e.dst, self.current_order[0])
         self.fsm.onchangestate = log
 
