@@ -60,25 +60,24 @@ class Motion(object):
     def _rotate_move(self, direction, steps, speed):
         assert direction == Motion.LEFT or direction == Motion.RIGHT
         assert steps >= 0
-        print [Packet.CONTROL_LEFT_FORWARD, Packet.CONTROL_LEFT_BACKWARD][direction == Motion.LEFT]
         l_packet = Packet(control=[Packet.CONTROL_LEFT_FORWARD, Packet.CONTROL_LEFT_BACKWARD][direction == Motion.LEFT],
-                          speed = speed >> 2,
-                          steps = steps >> 2)
+                          speed = speed >> 1,
+                          steps = steps >> 1)
         r_packet = Packet(control=[Packet.CONTROL_RIGHT_FORWARD, Packet.CONTROL_RIGHT_BACKWARD][direction == Motion.RIGHT],
-                          speed = speed >> 2,
-                          steps = steps >> 2)
-        self.comms.write(l_packet.bytes)
+                          speed = speed >> 1,
+                          steps = steps >> 1)
         self.comms.write(r_packet.bytes)
+        self.comms.write(l_packet.bytes)
 
     def _linear_move(self, direction, steps, speed):
         assert direction == Motion.FORWARD or direction == Motion.BACKWARD
         assert steps >= 0
         l_packet = Packet(control=[Packet.CONTROL_LEFT_FORWARD, Packet.CONTROL_LEFT_BACKWARD][direction == Motion.BACKWARD],
-                          speed = speed >> 2,
-                          steps = steps >> 2)
+                          speed = speed >> 1,
+                          steps = steps >> 1)
         r_packet = Packet(control=[Packet.CONTROL_RIGHT_FORWARD, Packet.CONTROL_RIGHT_BACKWARD][direction == Motion.BACKWARD],
-                          speed = speed >> 2,
-                          steps = steps >> 2)
+                          speed = speed >> 1,
+                          steps = steps >> 1)
         self.comms.write(l_packet.bytes)
         self.comms.write(r_packet.bytes)
     

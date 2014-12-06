@@ -72,6 +72,7 @@ class Line_Analyser(object):
         img = img_threshold(img, cv2.THRESH_BINARY, threshold, demo_threshold)
         img = erode_and_dilate(img, demo_erode) 
         img = img_threshold(img, cv2.THRESH_BINARY, 10, demo_threshold)
+
         return img
 
     def intersect_lines(self, img, interval_percent, demo=False):
@@ -105,7 +106,8 @@ class Line_Analyser(object):
         if demo:
             cv2.imshow('scan_lines', dsp_img)
             waitKey()
-        #cv2.imwrite('img_{}.jpeg'.format(datetime.now()),dsp_img)
+        cv2.imwrite('/root/img_{}.jpeg'.format(datetime.now()),dsp_img)
+        print("writing to img")
         return lines
 
     def get_lines(self, img, interval_percent=10, demo_thresholds=False, demo_lines=False):
