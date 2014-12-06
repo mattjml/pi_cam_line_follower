@@ -54,7 +54,10 @@ class Control(object):
         # Can't see any lines
         if direction is None:
             direction = self.last_turn
-            self.backwards_turn(direction)
+            # self.backwards_turn(direction)
+            self.current_order = (self.motion.backward,
+                                  (self.params.reversing_steps,
+                                   self.params.reversing_speed))
         elif direction is Control.LEFT:
             self.current_order = (self.motion.rotate_left,
                                   (self.params.turning_steps,
