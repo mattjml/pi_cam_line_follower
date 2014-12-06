@@ -35,6 +35,7 @@ class Socket_Comms(object):
 
     def __enter__(self):
         try:
+            
             print("Opening Socket")
             # Create UDS Socket
             self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -50,6 +51,7 @@ class Socket_Comms(object):
         self.socket.close()
    
     def write(self, data):
+        print("{:x}{:x}{:x}{:x}{:x}".format(data[0],data[1],data[2],data[3],data[4]))
         self.socket.sendall(data)
 
     def read(self):

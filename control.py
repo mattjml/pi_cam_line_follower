@@ -18,7 +18,7 @@ class Control_Parameters(object):
                  finding_bend_speed,
                  finding_bend_threshold=10):
         def check_param(param):
-            assert 320 > param > 0, 'Param can only be in the range 0-320'
+            assert 320 >= param > 0, 'Param can only be in the range 0-320'
         
         check_param(forward_steps)
         check_param(forward_speed)
@@ -51,9 +51,11 @@ class Control(object):
     def on_out(self, e):
         direction = e.args[0]
         lines = e.args[1]
+        # Can't see any lines
         if direction is None:
             direction = self.last_turn
-        if direction is Control.LEFT:
+            self.backwards_turn(direction)
+        elif direction is Control.LEFT:
             self.current_order = (self.motion.rotate_left,
                                   (self.params.turning_steps,
                                    self.params.turning_speed))
@@ -69,19 +71,30 @@ class Control(object):
                               (self.params.forward_steps,
                                self.params.forward_speed))
     
+    def backwards_turn(self, direction):
+        if direction is Control.LEFT:
+            self.current_order = (self.motion.specific_move,
+                                  (self.motion.BACKWARD,
+                                   self.params.finding_bend_steps,
+                                   self.params.finding_bend_speed,
+                                   self.motion.FORWARD,
+                                   self.params.finding_bend_steps,
+                                   int(self.params.finding_bend_speed*0.2)))
+            self.last_turn = direction
+        else:
+            self.current_order = (self.motion.specific_move,
+                                  (self.motion.FORWARD,
+                                   self.params.finding_bend_steps,
+                                   int(self.params.finding_bend_speed*0.2),
+                                   self.motion.BACKWARD,
+                                   self.params.finding_bend_steps,
+                                   self.params.finding_bend_speed))
+            self.last_turn = direction
+    
     def on_in_bottom(self, e):
         direction = e.args[0]
         print("Moving in old direction {0}".format(direction))
-        if direction is Control.LEFT:
-            self.current_order = (self.motion.rotate_left,
-                                  (self.params.finding_bend_steps,
-                                   self.params.finding_bend_speed))
-            self.last_turn = direction
-        else:
-            self.current_order = (self.motion.rotate_right,
-                                  (self.params.finding_bend_steps,
-                                   self.params.finding_bend_speed))
-            self.last_turn = direction
+        self.backwards_turn(direction)
 
     def __init__(self, motion, parameters):
         self.log_file = open('/root/log.file', 'w')

@@ -22,9 +22,9 @@ with picamera.PiCamera() as camera,\
                                                 reversing_steps=5,
                                                 reversing_speed=300,
                                                 turning_steps=10,
-                                                turning_speed=300,
+                                                turning_speed=320,
                                                 finding_bend_steps=100,
-                                                finding_bend_speed=170)
+                                                finding_bend_speed=320)
 
     control = control.Control(motion, control_params)
     analyser = line_analysis.Line_Analyser()
